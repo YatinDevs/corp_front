@@ -1,52 +1,40 @@
-// src/store/useStore.js
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import {
-  fetchCategories,
-  fetchComboPacks,
-  fetchProducts,
-} from "../services/apiService";
-
-// Helper function for generating toast messages
-const getToastMessage = (action, success = true, productName = "Item") => {
-  const messages = {
-    add: success ? "added to cart" : "failed to add to cart",
-    remove: success ? "removed from cart" : "failed to remove from cart",
-    update: success ? "quantity updated" : "failed to update quantity",
-    clear: success ? "cart cleared" : "failed to clear cart",
-  };
-  return `${productName} ${messages[action]}`;
-};
+import * as api from "../services/apiService";
 
 export const useStore = create(
   persist(
     (set, get) => ({
-      // Products state
+      // State
       products: [],
+      singleProducts: [],
+      comboProducts: [],
       featuredProducts: [],
+      categories: [],
+      featuredCategories: [],
+      searchResults: [],
       loadingStates: {
         products: false,
+        singleProducts: false,
+        comboProducts: false,
+        featuredProducts: false,
         categories: false,
-        comboPacks: false,
+        featuredCategories: false,
+        search: false,
       },
       errors: {
         products: null,
+        singleProducts: null,
+        comboProducts: null,
+        featuredProducts: null,
         categories: null,
-        comboPacks: null,
+        featuredCategories: null,
+        search: null,
       },
-
-      // Categories state
-      categories: [],
-
-      // Combo Packs state
-      comboPacks: [],
-
-      // Cart state
       cartItems: [],
       isCartOpen: false,
-      toast: null,
 
-      // Data fetching actions
+      // Actions
       fetchProducts: async () => {
         set({
           loadingStates: { ...get().loadingStates, products: true },
@@ -54,20 +42,92 @@ export const useStore = create(
         });
 
         try {
-          const response = await fetchProducts();
+          const data = await api.fetchProducts();
           set({
-            products: response.data,
+            products: data,
             loadingStates: { ...get().loadingStates, products: false },
           });
+          return data;
         } catch (error) {
           set({
             errors: { ...get().errors, products: error.message },
             loadingStates: { ...get().loadingStates, products: false },
           });
-          get().toast?.addToast?.(
-            `Failed to load products: ${error.message}`,
-            "error"
-          );
+          throw error;
+        }
+      },
+
+      fetchFeaturedProducts: async () => {
+        set({
+          loadingStates: { ...get().loadingStates, featuredProducts: true },
+          errors: { ...get().errors, featuredProducts: null },
+        });
+
+        try {
+          const data = await api.fetchFeaturedProducts();
+          set({
+            featuredProducts: data,
+            loadingStates: { ...get().loadingStates, featuredProducts: false },
+          });
+          return data;
+        } catch (error) {
+          set({
+            errors: { ...get().errors, featuredProducts: error.message },
+            loadingStates: { ...get().loadingStates, featuredProducts: false },
+          });
+          throw error;
+        }
+      },
+
+      fetchSingleProducts: async () => {
+        set({
+          loadingStates: { ...get().loadingStates, singleProducts: true },
+          errors: { ...get().errors, singleProducts: null },
+        });
+
+        try {
+          const data = await api.fetchSingleProducts();
+          set({
+            singleProducts: data,
+            loadingStates: { ...get().loadingStates, singleProducts: false },
+          });
+          return data;
+        } catch (error) {
+          set({
+            errors: { ...get().errors, singleProducts: error.message },
+            loadingStates: { ...get().loadingStates, singleProducts: false },
+          });
+          throw error;
+        }
+      },
+
+      fetchComboProducts: async () => {
+        set({
+          loadingStates: { ...get().loadingStates, comboProducts: true },
+          errors: { ...get().errors, comboProducts: null },
+        });
+
+        try {
+          const data = await api.fetchComboProducts();
+          set({
+            comboProducts: data,
+            loadingStates: { ...get().loadingStates, comboProducts: false },
+          });
+          return data;
+        } catch (error) {
+          set({
+            errors: { ...get().errors, comboProducts: error.message },
+            loadingStates: { ...get().loadingStates, comboProducts: false },
+          });
+          throw error;
+        }
+      },
+
+      fetchProductById: async (id) => {
+        try {
+          return await api.fetchProductById(id);
+        } catch (error) {
+          throw error;
         }
       },
 
@@ -78,174 +138,130 @@ export const useStore = create(
         });
 
         try {
-          const response = await fetchCategories();
+          const data = await api.fetchCategories();
           set({
-            categories: response,
+            categories: data,
             loadingStates: { ...get().loadingStates, categories: false },
           });
+          return data;
         } catch (error) {
           set({
             errors: { ...get().errors, categories: error.message },
             loadingStates: { ...get().loadingStates, categories: false },
           });
-          get().toast?.addToast?.(
-            `Failed to load categories: ${error.message}`,
-            "error"
-          );
+          throw error;
         }
       },
 
-      // Updated fetchComboPacks action to accept params
-      fetchComboPacks: async (params = {}) => {
+      fetchFeaturedCategories: async () => {
         set({
-          loadingStates: { ...get().loadingStates, comboPacks: true },
-          errors: { ...get().errors, comboPacks: null },
+          loadingStates: { ...get().loadingStates, featuredCategories: true },
+          errors: { ...get().errors, featuredCategories: null },
         });
 
         try {
-          const response = await fetchComboPacks(params);
+          const data = await api.fetchFeaturedCategories();
           set({
-            comboPacks: response.data,
-            loadingStates: { ...get().loadingStates, comboPacks: false },
+            featuredCategories: data,
+            loadingStates: {
+              ...get().loadingStates,
+              featuredCategories: false,
+            },
           });
+          return data;
         } catch (error) {
           set({
-            errors: { ...get().errors, comboPacks: error.message },
-            loadingStates: { ...get().loadingStates, comboPacks: false },
+            errors: { ...get().errors, featuredCategories: error.message },
+            loadingStates: {
+              ...get().loadingStates,
+              featuredCategories: false,
+            },
           });
-          get().toast?.addToast?.(
-            `Failed to load combo packs: ${error.message}`,
-            "error"
-          );
+          throw error;
+        }
+      },
+
+      fetchCategoryProducts: async (categoryId) => {
+        try {
+          return await api.fetchCategoryProducts(categoryId);
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      searchProducts: async (query) => {
+        set({
+          loadingStates: { ...get().loadingStates, search: true },
+          errors: { ...get().errors, search: null },
+        });
+
+        try {
+          const data = await api.searchProducts(query);
+          set({
+            searchResults: data,
+            loadingStates: { ...get().loadingStates, search: false },
+          });
+          return data;
+        } catch (error) {
+          set({
+            errors: { ...get().errors, search: error.message },
+            loadingStates: { ...get().loadingStates, search: false },
+          });
+          throw error;
         }
       },
 
       // Cart actions
       addToCart: (product) => {
-        const { toast, cartItems } = get();
+        const { cartItems } = get();
         const existingItem = cartItems.find((item) => item.id === product.id);
 
-        try {
-          // Validation
-          if (product.stock_quantity <= 0) {
-            toast?.addToast?.("This product is out of stock", "error");
-            return false;
-          }
-
-          if (existingItem && existingItem.quantity >= product.stock_quantity) {
-            toast?.addToast?.("Maximum available quantity reached", "warning");
-            return false;
-          }
-
+        if (existingItem) {
+          // Update quantity if already in cart
           set({
-            cartItems: existingItem
-              ? cartItems.map((item) =>
-                  item.id === product.id
-                    ? { ...item, quantity: item.quantity + 1 }
-                    : item
-                )
-              : [
-                  ...cartItems,
-                  {
-                    ...product,
-                    quantity: 1,
-                    addedAt: Date.now(),
-                  },
-                ],
+            cartItems: cartItems.map((item) =>
+              item.id === product.id
+                ? { ...item, quantity: item.quantity + 1 }
+                : item
+            ),
           });
-
-          toast?.addToast?.(
-            getToastMessage("add", true, product.name),
-            "success"
-          );
-          return true;
-        } catch (error) {
-          toast?.addToast?.(
-            getToastMessage("add", false, product.name),
-            "error"
-          );
-          console.error("Add to cart error:", error);
-          return false;
+        } else {
+          // Add new item to cart
+          set({
+            cartItems: [
+              ...cartItems,
+              {
+                ...product,
+                quantity: 1,
+                addedAt: Date.now(),
+              },
+            ],
+          });
         }
       },
 
       removeFromCart: (productId) => {
-        const { toast, cartItems } = get();
-        const product = cartItems.find((item) => item.id === productId);
-
-        try {
-          set({
-            cartItems: cartItems.filter((item) => item.id !== productId),
-          });
-
-          toast?.addToast?.(
-            getToastMessage("remove", true, product?.name),
-            "info"
-          );
-          return true;
-        } catch (error) {
-          toast?.addToast?.(getToastMessage("remove", false), "error");
-          console.error("Remove from cart error:", error);
-          return false;
-        }
+        set({
+          cartItems: get().cartItems.filter((item) => item.id !== productId),
+        });
       },
 
       updateQuantity: (productId, quantity) => {
-        const { toast, cartItems } = get();
-        const product = cartItems.find((item) => item.id === productId);
-
-        try {
-          // Validation
-          if (quantity < 1) {
-            toast?.addToast?.("Quantity must be at least 1", "warning");
-            return false;
-          }
-
-          if (quantity > product?.stock_quantity) {
-            toast?.addToast?.("Not enough stock available", "error");
-            return false;
-          }
-
-          set({
-            cartItems: cartItems.map((item) =>
-              item.id === productId
-                ? { ...item, quantity: Math.max(1, quantity) }
-                : item
-            ),
-          });
-
-          toast?.addToast?.(
-            getToastMessage("update", true, product?.name),
-            "success"
-          );
-          return true;
-        } catch (error) {
-          toast?.addToast?.(getToastMessage("update", false), "error");
-          console.error("Update quantity error:", error);
-          return false;
-        }
+        set({
+          cartItems: get().cartItems.map((item) =>
+            item.id === productId ? { ...item, quantity } : item
+          ),
+        });
       },
 
       clearCart: () => {
-        const { toast } = get();
-        try {
-          set({ cartItems: [] });
-          toast?.addToast?.(getToastMessage("clear", true), "info");
-          return true;
-        } catch (error) {
-          toast?.addToast?.(getToastMessage("clear", false), "error");
-          console.error("Clear cart error:", error);
-          return false;
-        }
+        set({ cartItems: [] });
       },
 
       // Cart visibility
       openCart: () => set({ isCartOpen: true }),
       closeCart: () => set({ isCartOpen: false }),
       toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
-
-      // Initialize toast in store
-      setToast: (toast) => set({ toast }),
     }),
     {
       name: "ecommerce-store",
@@ -257,11 +273,12 @@ export const useStore = create(
   )
 );
 
-// Selectors for computed values
+// Selectors
 export const useCartTotal = () =>
   useStore((state) =>
     state.cartItems.reduce(
-      (total, item) => total + item.price * item.quantity,
+      (total, item) =>
+        total + (item.discount_price || item.price) * item.quantity,
       0
     )
   );
@@ -271,9 +288,19 @@ export const useItemCount = () =>
     state.cartItems.reduce((count, item) => count + item.quantity, 0)
   );
 
-// Additional useful selectors
 export const useCartItem = (productId) =>
   useStore((state) => state.cartItems.find((item) => item.id === productId));
 
 export const useIsProductInCart = (productId) =>
   useStore((state) => state.cartItems.some((item) => item.id === productId));
+
+export const useProductById = (id) =>
+  useStore((state) => {
+    const allProducts = [
+      ...state.products,
+      ...state.singleProducts,
+      ...state.comboProducts,
+      ...state.featuredProducts,
+    ];
+    return allProducts.find((p) => p.id === id);
+  });

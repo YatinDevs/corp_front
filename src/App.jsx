@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useEffect } from "react";
 import {
   createBrowserRouter,
@@ -8,27 +9,32 @@ import {
 import Layout from "./Layout/Layout";
 import Home from "./pages/Home/Home";
 import PageNotFound from "./pages/ErrorPages/NotFound";
-import { useStore } from "./store/useStore";
 import Checkout from "./pages/CartFeature/Checkout";
 import ContactUsPage from "./pages/ContactUsPage/ContactUsPage";
 import AboutPage from "./pages/AboutPage/AboutPage";
 import ProductsPage from "./pages/ProductsPage/ProductsPage";
+import { useToast } from "./context/ToastContext";
+import { useStore } from "./store/useStore";
 
 function App() {
-  const {
-    products,
-    categories,
-    comboPacks,
-    fetchCategories,
-    fetchProducts,
-    fetchComboPacks,
-  } = useStore();
-  // console.log(products, categories, comboPacks);
+  const { fetchCategories, fetchProducts, fetchComboPacks } = useStore();
+  const { addToast, removeToast } = useToast();
 
+  // Load initial data
   useEffect(() => {
-    fetchCategories();
-    fetchProducts();
-    fetchComboPacks();
+    const loadData = async () => {
+      try {
+        await Promise.all([
+          fetchCategories(),
+          fetchProducts(),
+          fetchComboPacks(),
+        ]);
+      } catch (error) {
+        console.error("Initial data loading error:", error);
+      }
+    };
+
+    loadData();
   }, [fetchCategories, fetchProducts, fetchComboPacks]);
 
   const router = createBrowserRouter(

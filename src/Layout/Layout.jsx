@@ -6,19 +6,8 @@ import Footer from "../components/Footer";
 import WhatsAppPopup from "../components/PopUp/WhatsAppPopup";
 import ScrollToTop from "../components/ScrollToTop/ScrollToTop";
 import CartSidebar from "../pages/CartFeature/CartSidebar";
-import { useToast } from "../context/ToastContext";
-import { useStore } from "../store/useStore";
-
-export const CartContext = React.createContext();
 
 function Layout() {
-  const { addToast, removeToast } = useToast();
-  const setToast = useStore((state) => state.setToast);
-
-  React.useEffect(() => {
-    setToast({ addToast, removeToast });
-  }, [addToast, removeToast, setToast]);
-
   return (
     <>
       <ScrollToTop />
