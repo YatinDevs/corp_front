@@ -38,7 +38,7 @@ export const fetchFeaturedProducts = async () => {
 
 export const fetchSingleProducts = async () => {
   try {
-    const response = await api.get("/products/single");
+    const response = await api.get("/products/singlenew");
     return logResponse("/products/single", response.data);
   } catch (error) {
     return logError("/products/single", error);

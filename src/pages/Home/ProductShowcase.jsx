@@ -8,8 +8,8 @@ import DetailsModal from "../CartFeature/DetailsModal";
 
 const ProductsShowcase = () => {
   const {
-    products = [],
-    categories = [],
+    products = {},
+    categories = {},
     loadingStates: { products: loadingProducts, categories: loadingCategories },
     errors: { products: productsError, categories: categoriesError },
     fetchProducts,
@@ -22,7 +22,7 @@ const ProductsShowcase = () => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // Memoize fetch functions to prevent unnecessary re-renders
+  // Memoize fetch functions
   const memoizedFetchProducts = useCallback(() => {
     fetchProducts();
   }, [fetchProducts]);
@@ -47,20 +47,38 @@ const ProductsShowcase = () => {
     };
   }, [searchQuery]);
 
-  // Optimize category filtering with useMemo
+  // Get products data from response
+  const productsData = useMemo(() => products.data || [], [products.data]);
+
+  // Get categories data from response
+  const categoriesData = useMemo(
+    () => categories.data || [],
+    [categories.data]
+  );
+
+  // Create category map for quick lookup
   const categoryMap = useMemo(() => {
-    return categories.reduce((map, category) => {
-      map[category.name] = category;
+    return categoriesData.reduce((map, category) => {
+      map[category.id] = category;
       return map;
     }, {});
-  }, [categories]);
+  }, [categoriesData]);
 
+  // Filter products by active category
   const filteredProducts = useMemo(() => {
-    return activeFilter === "All"
-      ? products
-      : products.filter((product) => product.category?.name === activeFilter);
-  }, [products, activeFilter]);
+    if (activeFilter === "All") return productsData;
 
+    return productsData.filter((product) => {
+      // For combo products, check if any product in the combo matches the category
+      if (product.type === "combo" && product.products) {
+        return product.products.some((p) => p.category_id === activeFilter);
+      }
+      // For single products, check the category directly
+      return product.category_id === activeFilter;
+    });
+  }, [productsData, activeFilter]);
+
+  // Filter by search query
   const searchedProducts = useMemo(() => {
     return filteredProducts.filter((product) => {
       const nameMatch = product.name
@@ -101,7 +119,9 @@ const ProductsShowcase = () => {
           <div>
             <h2 className="text-3xl font-bold text-[#5e0808]">Our Products</h2>
             <p className="text-[#5e0808] mt-2">
-              {activeFilter === "All" ? "All products" : activeFilter}
+              {activeFilter === "All"
+                ? "All products"
+                : categoryMap[activeFilter]?.name || activeFilter}
             </p>
           </div>
 
@@ -145,7 +165,7 @@ const ProductsShowcase = () => {
             <span className="text-sm text-[#5e0808]">Active filters:</span>
             {activeFilter !== "All" && (
               <div className="flex items-center bg-[#fcce01] text-[#5e0808] px-3 py-1 rounded-full text-sm">
-                {activeFilter}
+                {categoryMap[activeFilter]?.name || activeFilter}
                 <button
                   onClick={() => setActiveFilter("All")}
                   className="ml-2 text-[#a30d14] hover:text-[#5e0808]"
@@ -197,15 +217,15 @@ const ProductsShowcase = () => {
                 >
                   All Products
                 </button>
-                {categories.map((category) => (
+                {categoriesData.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => {
-                      setActiveFilter(category.name);
+                      setActiveFilter(category.id);
                       setShowMobileFilters(false);
                     }}
                     className={`px-4 py-2 rounded-lg text-sm text-left ${
-                      activeFilter === category.name
+                      activeFilter === category.id
                         ? "bg-[#5e0808] text-white"
                         : "bg-[#d4d3d0] text-[#5e0808] hover:bg-[#fcce01]"
                     }`}
@@ -229,12 +249,12 @@ const ProductsShowcase = () => {
           >
             All Products
           </button>
-          {categories.map((category) => (
+          {categoriesData.map((category) => (
             <button
               key={category.id}
-              onClick={() => setActiveFilter(category.name)}
+              onClick={() => setActiveFilter(category.id)}
               className={`px-4 py-2 rounded-full whitespace-nowrap ${
-                activeFilter === category.name
+                activeFilter === category.id
                   ? "bg-[#5e0808] text-white"
                   : "bg-[#d4d3d0] text-[#5e0808] hover:bg-[#fcce01]"
               }`}

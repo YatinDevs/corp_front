@@ -34,7 +34,7 @@ const ProductCard = ({ product, index, animationDelay = 0, onViewDetails }) => {
     >
       <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-[#d4d3d0]">
         <Link to={`/product/${product.id}`} className="block">
-          <div className="relative aspect-square overflow-hidden">
+          <div className="relative ">
             <img
               src={
                 product.images?.[0]
@@ -42,7 +42,7 @@ const ProductCard = ({ product, index, animationDelay = 0, onViewDetails }) => {
                   : "/placeholder-product.jpg"
               }
               alt={product.name}
-              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-contain   transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
             {product.stock_quantity <= 0 && (

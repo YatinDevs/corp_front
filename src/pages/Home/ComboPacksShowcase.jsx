@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiFilter, FiChevronDown, FiX, FiSearch } from "react-icons/fi";
-import { Link } from "react-router-dom";
 import { useStore } from "../../store/useStore";
 import { useToast } from "../../context/ToastContext";
 import { ShoppingCart, Heart } from "lucide-react";
@@ -9,17 +8,17 @@ import DetailsModal from "../CartFeature/DetailsModal";
 
 const ComboPacksShowcase = () => {
   const {
-    comboPacks = [],
-    categories = [],
+    comboPacks = {},
+    categories = {},
     loadingStates: {
       comboPacks: loadingComboPacks,
       categories: loadingCategories,
     },
     errors: { comboPacks: comboPacksError, categories: categoriesError },
-    fetchComboPacks,
+    fetchComboProducts,
     fetchCategories,
   } = useStore();
-
+  console.log(comboPacks);
   const addToCart = useStore((state) => state.addToCart);
   const { addToast } = useToast();
   const [selectedCombo, setSelectedCombo] = useState(null);
@@ -31,9 +30,9 @@ const ComboPacksShowcase = () => {
   // Memoize fetch functions
   const memoizedFetchComboPacks = useCallback(
     (params = {}) => {
-      fetchComboPacks(params);
+      fetchComboProducts(params);
     },
-    [fetchComboPacks]
+    [fetchComboProducts]
   );
 
   const memoizedFetchCategories = useCallback(() => {
@@ -58,16 +57,29 @@ const ComboPacksShowcase = () => {
     };
   }, [searchQuery]);
 
-  // Optimize category filtering
+  // Get combo packs data from response
+  const comboPacksData = useMemo(
+    () => comboPacks.data || [],
+    [comboPacks.data]
+  );
+
+  // Get categories data from response
+  const categoriesData = useMemo(
+    () => categories.data || [],
+    [categories.data]
+  );
+
+  // Create category map for quick lookup
   const categoryMap = useMemo(() => {
-    return categories.reduce((map, category) => {
+    return categoriesData.reduce((map, category) => {
       map[category.id] = category;
       return map;
     }, {});
-  }, [categories]);
+  }, [categoriesData]);
 
+  // Filter combo packs by search query
   const filteredComboPacks = useMemo(() => {
-    return comboPacks.filter((combo) => {
+    return comboPacksData.filter((combo) => {
       const nameMatch = combo.name
         ?.toLowerCase()
         .includes(debouncedSearchQuery.toLowerCase());
@@ -76,7 +88,7 @@ const ComboPacksShowcase = () => {
         .includes(debouncedSearchQuery.toLowerCase());
       return nameMatch || descMatch;
     });
-  }, [comboPacks, debouncedSearchQuery]);
+  }, [comboPacksData, debouncedSearchQuery]);
 
   const clearFilters = useCallback(() => {
     setActiveFilter("All");
@@ -241,7 +253,7 @@ const ComboPacksShowcase = () => {
                 >
                   All Combos
                 </button>
-                {categories.map((category) => (
+                {categoriesData.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => {
@@ -273,7 +285,7 @@ const ComboPacksShowcase = () => {
           >
             All Combos
           </button>
-          {categories.map((category) => (
+          {categoriesData.map((category) => (
             <button
               key={category.id}
               onClick={() => setActiveFilter(category.id)}

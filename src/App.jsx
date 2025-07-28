@@ -15,9 +15,13 @@ import AboutPage from "./pages/AboutPage/AboutPage";
 import ProductsPage from "./pages/ProductsPage/ProductsPage";
 import { useToast } from "./context/ToastContext";
 import { useStore } from "./store/useStore";
+import CategoriesPage from "./pages/CategoriesPage/CategoriesPage";
+import GiftSetsPage from "./pages/GiftSetsPage/GiftSetsPage";
+import OccasionsPage from "./pages/OccasionsPage/OccasionsPage";
 
 function App() {
-  const { fetchCategories, fetchProducts, fetchComboPacks } = useStore();
+  const { fetchCategories, fetchSingleProducts, fetchComboProducts } =
+    useStore();
   const { addToast, removeToast } = useToast();
 
   // Load initial data
@@ -26,8 +30,8 @@ function App() {
       try {
         await Promise.all([
           fetchCategories(),
-          fetchProducts(),
-          fetchComboPacks(),
+          fetchSingleProducts(),
+          fetchComboProducts(),
         ]);
       } catch (error) {
         console.error("Initial data loading error:", error);
@@ -35,7 +39,7 @@ function App() {
     };
 
     loadData();
-  }, [fetchCategories, fetchProducts, fetchComboPacks]);
+  }, [fetchCategories, fetchSingleProducts, fetchComboProducts]);
 
   const router = createBrowserRouter(
     createRoutesFromElements(
@@ -46,6 +50,10 @@ function App() {
         <Route path="/category/:slug" element={<ProductsPage />} />
         <Route path="*" element={<PageNotFound />} />
         <Route path="about" element={<AboutPage />} />
+        <Route path="categories" element={<CategoriesPage />} />
+        <Route path="gift-sets" element={<GiftSetsPage />} />
+        <Route path="occasions" element={<OccasionsPage />} />
+
         <Route path="contact" element={<ContactUsPage />} />
       </Route>
     )

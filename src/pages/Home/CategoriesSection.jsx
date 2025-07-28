@@ -28,6 +28,7 @@ const CategoriesSection = () => {
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
+  console.log(categories);
   // Mock categories data since we're not using the store in this example
   const mockCategories = [
     {
@@ -162,7 +163,7 @@ const CategoriesSection = () => {
         </div>
 
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 sm:gap-6">
-          {categories.map((category, index) => (
+          {categories?.data?.map((category, index) => (
             <motion.div
               key={category.id}
               initial={{ opacity: 0, y: 20 }}

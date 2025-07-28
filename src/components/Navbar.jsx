@@ -70,6 +70,21 @@ const Navbar = () => {
     //   ],
     // },
     {
+      label: "Categories",
+      path: "/categories",
+      icon: <Phone className="h-4 w-4 mr-2" />,
+    },
+    {
+      label: "Gift Sets",
+      path: "/gift-sets",
+      icon: <Gift className="h-4 w-4 mr-2" />,
+    },
+    {
+      label: "Occasions",
+      path: "/occasions",
+      icon: <Phone className="h-4 w-4 mr-2" />,
+    },
+    {
       label: "Contact",
       path: "/contact",
       icon: <Phone className="h-4 w-4 mr-2" />,
